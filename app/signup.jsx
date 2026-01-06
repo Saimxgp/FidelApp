@@ -8,6 +8,7 @@ import {
 } from "@/constants/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useMemo, useState } from "react";
 import {
   Alert,
@@ -17,6 +18,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import {
   Button,
   Divider,
@@ -43,6 +45,7 @@ export default function SignUpScreen({ onLogin, onBack }) {
   const [submitted, setSubmitted] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [mode, setMode] = useState("cliente");
   const theme = useTheme();
   const inputTheme = useMemo(
     () => ({
@@ -77,7 +80,7 @@ export default function SignUpScreen({ onLogin, onBack }) {
   const isFormValid =
     !!name && emailRegex.test(email) && password.length >= 6 && confirmPassword === password;
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setSubmitted(true);
 
     if (!isFormValid) {
@@ -85,9 +88,15 @@ export default function SignUpScreen({ onLogin, onBack }) {
       return;
     }
 
-    Alert.alert("Cuenta creada", "Tu cuenta ha sido creada exitosamente", [
-      { text: "Ir al inicio", onPress: onLogin },
-    ]);
+    try {
+      await AsyncStorage.setItem("userMode", mode);
+      Alert.alert("Cuenta creada", "Tu cuenta ha sido creada exitosamente", [
+        { text: "Ir al inicio", onPress: onLogin },
+      ]);
+    } catch (error) {
+      console.warn("Failed to save mode", error);
+      Alert.alert("Error", "No se pudo guardar la configuración. Inténtalo de nuevo.");
+    }
   };
 
   return (
@@ -104,9 +113,6 @@ export default function SignUpScreen({ onLogin, onBack }) {
             <Image source={require("@/assets/images/icon.png")} style={styles.heroLogo} />
           </View>
           <Text style={styles.heroTitle}>Crea tu cuenta</Text>
-          <Text style={styles.heroSubtitle}>
-            Gestiona tus recompensas desde una experiencia fresca y moderna.
-          </Text>
         </View>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -212,6 +218,18 @@ export default function SignUpScreen({ onLogin, onBack }) {
           <HelperText type="error" visible={!!confirmError}>
             {confirmError || " "}
           </HelperText>
+          <Text style={styles.label}>Modo de uso</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={mode}
+              onValueChange={setMode}
+              style={styles.picker}
+            >
+              <Picker.Item label="Cliente" value="cliente" />
+              <Picker.Item label="Empresa" value="empresa" />
+              <Picker.Item label="Ambas" value="ambas" />
+            </Picker>
+          </View>
           <Button
             mode="contained"
             icon={createIcon("account-plus", Colors.textOnPrimary)}
@@ -259,8 +277,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   hero: {
-    paddingTop: Layout.screenPadding * 2,
-    paddingBottom: Layout.screenPadding * 2.5,
+    paddingTop: Layout.screenPadding * 0.2,
+    paddingBottom: Layout.screenPadding * 0.2,
     paddingHorizontal: Layout.screenPadding,
     borderBottomLeftRadius: BorderRadius.xl * 2,
     borderBottomRightRadius: BorderRadius.xl * 2,
@@ -269,41 +287,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heroLogoWrapper: {
-    width: Layout.logoSize * 0.85,
-    height: Layout.logoSize * 0.85,
+    width: Layout.logoSize * 0.6,
+    height: Layout.logoSize * 0.6,
     borderRadius: BorderRadius.round,
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xxs,
   },
   heroLogo: {
-    width: Layout.logoSize * 0.5,
-    height: Layout.logoSize * 0.5,
+    width: Layout.logoSize * 0.35,
+    height: Layout.logoSize * 0.35,
     tintColor: Colors.textOnPrimary,
   },
   heroTitle: {
-    fontSize: FontSizes.xxl,
+    fontSize: FontSizes.lg,
     color: Colors.textOnPrimary,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: Spacing.xs,
+    marginBottom: 0,
   },
   heroSubtitle: {
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     color: Colors.textOnPrimary,
     textAlign: "center",
-    lineHeight: FontSizes.md * 1.4,
+    lineHeight: FontSizes.sm * 1.4,
   },
   content: {
+    paddingTop: Spacing.md,
     paddingHorizontal: Layout.screenPadding,
     paddingBottom: Spacing.xl,
   },
   card: {
     backgroundColor: Colors.card,
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
+    padding: Spacing.md,
+    gap: Spacing.xs,
     ...Shadows.medium,
   },
   title: {
@@ -315,7 +334,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.sm,
     color: Colors.textMuted,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
     lineHeight: FontSizes.sm * 1.6,
   },
   input: {
@@ -362,5 +381,15 @@ const styles = StyleSheet.create({
   },
   backButtonContent: {
     height: Layout.buttonHeight * 0.6,
+  },
+  pickerContainer: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  picker: {
+    color: Colors.text,
   },
 });

@@ -8,9 +8,12 @@ import {
 } from "@/constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  Alert,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -25,9 +28,19 @@ const PROFILE = {
   stamps: 34,
 };
 
-export default function Perfil({ onLogout = () => {} }) {
+export default function Perfil({ onLogout = () => {}, userMode, setUserMode }) {
+  const handleModeChange = async (newMode) => {
+    try {
+      await AsyncStorage.setItem("userMode", newMode);
+      setUserMode(newMode);
+      Alert.alert("Configuración actualizada", "El modo de uso ha sido cambiado.");
+    } catch (error) {
+      console.warn("Failed to save mode", error);
+      Alert.alert("Error", "No se pudo guardar la configuración.");
+    }
+  };
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <LinearGradient
         colors={Colors.gradients.hero}
         start={{ x: 0, y: 0 }}
@@ -76,6 +89,31 @@ export default function Perfil({ onLogout = () => {} }) {
         </View>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Configuración</Text>
+        <Text style={styles.sectionDescription}>Selecciona cómo usar la app</Text>
+        <View style={styles.modeSelector}>
+          <Pressable
+            style={[styles.modeButton, userMode === 'cliente' && styles.modeButtonActive]}
+            onPress={() => handleModeChange('cliente')}
+          >
+            <Text style={[styles.modeButtonText, userMode === 'cliente' && styles.modeButtonTextActive]}>Cliente</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.modeButton, userMode === 'empresa' && styles.modeButtonActive]}
+            onPress={() => handleModeChange('empresa')}
+          >
+            <Text style={[styles.modeButtonText, userMode === 'empresa' && styles.modeButtonTextActive]}>Empresa</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.modeButton, userMode === 'ambas' && styles.modeButtonActive]}
+            onPress={() => handleModeChange('ambas')}
+          >
+            <Text style={[styles.modeButtonText, userMode === 'ambas' && styles.modeButtonTextActive]}>Ambas</Text>
+          </Pressable>
+        </View>
+      </View>
+
       <Pressable
         style={({ pressed }) => [
           styles.secondaryButton,
@@ -98,7 +136,7 @@ export default function Perfil({ onLogout = () => {} }) {
           <Text style={styles.secondaryButtonText}>Cerrar sesión</Text>
         </LinearGradient>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -106,7 +144,10 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  content: {
     padding: Layout.screenPadding,
+    paddingBottom: Spacing.xl,
   },
   hero: {
     borderRadius: BorderRadius.xl,
@@ -221,5 +262,33 @@ const styles = StyleSheet.create({
     color: Colors.textOnPrimary,
     fontSize: FontSizes.md,
     fontWeight: "700",
+  },
+  modeSelector: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: Spacing.md,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: "center",
+    marginHorizontal: Spacing.xs,
+  },
+  modeButtonActive: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.background,
+  },
+  modeButtonText: {
+    color: Colors.text,
+    fontSize: FontSizes.sm,
+    fontWeight: "600",
+  },
+  modeButtonTextActive: {
+    color: Colors.primary,
   },
 });

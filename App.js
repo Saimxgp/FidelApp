@@ -1,5 +1,6 @@
 import "react-native-gesture-handler";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -11,6 +12,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import LoginScreen from "@/app/login";
 import SignUpScreen from "@/app/signup";
 import ForgotPasswordScreen from "@/app/forgotpassword";
+import OnboardingScreen from "@/app/onboarding";
 import EmpresasScreen from "@/app/(tabs)/Empresas";
 import ClienteScreen from "@/app/(tabs)/Cliente";
 import PerfilScreen from "@/app/(tabs)/Perfil";
@@ -84,7 +86,56 @@ function AuthNavigator({ onAuthSuccess }) {
   );
 }
 
-function MainTabs({ onLogout }) {
+function MainTabs({ onLogout, userMode, setUserMode }) {
+  const screens = [];
+
+  if (userMode === "empresa" || userMode === "ambas") {
+    screens.push(
+      <Tab.Screen
+        key="Empresas"
+        name="Empresas"
+        options={{
+          title: "Empresas",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="business" color={color} size={moderateScale(28, 0.5)} />
+          ),
+        }}
+        component={EmpresasScreen}
+      />
+    );
+  }
+
+  if (userMode === "cliente" || userMode === "ambas") {
+    screens.push(
+      <Tab.Screen
+        key="Cliente"
+        name="Cliente"
+        options={{
+          title: "Clientes",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="people" color={color} size={moderateScale(28, 0.5)} />
+          ),
+        }}
+        component={ClienteScreen}
+      />
+    );
+  }
+
+  screens.push(
+    <Tab.Screen
+      key="Perfil"
+      name="Perfil"
+      options={{
+        title: "Perfil",
+        tabBarIcon: ({ color }) => (
+          <Ionicons name="person" color={color} size={moderateScale(28, 0.5)} />
+        ),
+      }}
+    >
+      {(props) => <PerfilScreen {...props} onLogout={onLogout} userMode={userMode} setUserMode={setUserMode} />}
+    </Tab.Screen>
+  );
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -109,37 +160,7 @@ function MainTabs({ onLogout }) {
         },
       }}
     >
-      <Tab.Screen
-        name="Empresas"
-        options={{
-          title: "Empresas",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="business" color={color} size={moderateScale(28, 0.5)} />
-          ),
-        }}
-        component={EmpresasScreen}
-      />
-      <Tab.Screen
-        name="Cliente"
-        options={{
-          title: "Clientes",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="people" color={color} size={moderateScale(28, 0.5)} />
-          ),
-        }}
-        component={ClienteScreen}
-      />
-      <Tab.Screen
-        name="Perfil"
-        options={{
-          title: "Perfil",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person" color={color} size={moderateScale(28, 0.5)} />
-          ),
-        }}
-      >
-        {(props) => <PerfilScreen {...props} onLogout={onLogout} />}
-      </Tab.Screen>
+      {screens}
     </Tab.Navigator>
   );
 }
@@ -147,7 +168,25 @@ function MainTabs({ onLogout }) {
 export default function App() {
   const colorScheme = useColorScheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userMode, setUserMode] = useState("cliente");
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const isDarkMode = colorScheme === "dark";
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const mode = await AsyncStorage.getItem("userMode");
+        if (mode) {
+          setUserMode(mode);
+        }
+        const seen = await AsyncStorage.getItem("hasSeenOnboarding");
+        setHasSeenOnboarding(seen === "true");
+      } catch (error) {
+        console.warn("Failed to load user data", error);
+      }
+    };
+    loadUserData();
+  }, []);
 
   const paperTheme = useMemo(
     () => (isDarkMode ? paperDarkTheme : paperLightTheme),
@@ -160,7 +199,16 @@ export default function App() {
     <PaperProvider theme={paperTheme}>
       <NavigationContainer theme={navigationTheme}>
         {isLoggedIn ? (
-          <MainTabs onLogout={() => setIsLoggedIn(false)} />
+          hasSeenOnboarding ? (
+            <MainTabs onLogout={() => setIsLoggedIn(false)} userMode={userMode} setUserMode={setUserMode} />
+          ) : (
+            <OnboardingScreen
+              onComplete={async () => {
+                setHasSeenOnboarding(true);
+                await AsyncStorage.setItem("hasSeenOnboarding", "true");
+              }}
+            />
+          )
         ) : (
           <AuthNavigator onAuthSuccess={() => setIsLoggedIn(true)} />
         )}
