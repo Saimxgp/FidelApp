@@ -1,25 +1,24 @@
-import { Href, Link } from 'expo-router';
 import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
-import { type ComponentProps } from 'react';
+import { Linking, type GestureResponderEvent, type PressableProps, Pressable } from 'react-native';
 
-type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
+type Props = Omit<PressableProps, 'onPress'> & {
+  href: string;
+  onPress?: (event: GestureResponderEvent) => void | Promise<void>;
+};
 
-export function ExternalLink({ href, ...rest }: Props) {
-  return (
-    <Link
-      target="_blank"
-      {...rest}
-      href={href}
-      onPress={async (event) => {
-        if (process.env.EXPO_OS !== 'web') {
-          // Prevent the default behavior of linking to the default browser on native.
-          event.preventDefault();
-          // Open the link in an in-app browser.
-          await openBrowserAsync(href, {
-            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
-          });
-        }
-      }}
-    />
-  );
+export function ExternalLink({ href, onPress, ...rest }: Props) {
+  const handlePress = async (event: GestureResponderEvent) => {
+    await onPress?.(event);
+
+    if (process.env.EXPO_OS === 'web') {
+      await Linking.openURL(href);
+      return;
+    }
+
+    await openBrowserAsync(href, {
+      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+    });
+  };
+
+  return <Pressable accessibilityRole="link" {...rest} onPress={handlePress} />;
 }
