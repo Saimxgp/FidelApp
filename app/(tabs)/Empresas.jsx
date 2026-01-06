@@ -5,6 +5,8 @@ import {
   Colors,
   FontSizes,
   Layout,
+  scale,
+  Screen,
   Shadows,
   Spacing,
 } from "@/constants/styles";
@@ -253,10 +255,17 @@ export default function Empresas() {
       return;
     }
 
-    const db = dbRef.current;
+    let db = dbRef.current;
     if (!db) {
-      Alert.alert("Base de datos", "La base de datos no está lista todavía.");
-      return;
+      try {
+        db = await SQLite.openDatabaseAsync(DB_NAME);
+        dbRef.current = db;
+        await ensureTables(db);
+      } catch (error) {
+        console.warn("Failed to reopen database for company", error);
+        Alert.alert("Base de datos", "La base de datos no está disponible. Inténtalo de nuevo.");
+        return;
+      }
     }
 
     const newCompany = {
@@ -324,10 +333,17 @@ export default function Empresas() {
       return;
     }
 
-    const db = dbRef.current;
+    let db = dbRef.current;
     if (!db) {
-      Alert.alert("Base de datos", "La base de datos no está lista todavía.");
-      return;
+      try {
+        db = await SQLite.openDatabaseAsync(DB_NAME);
+        dbRef.current = db;
+        await ensureTables(db);
+      } catch (error) {
+        console.warn("Failed to reopen database for promotion", error);
+        Alert.alert("Base de datos", "La base de datos no está disponible. Inténtalo de nuevo.");
+        return;
+      }
     }
 
     const company = companies.find((item) => item.id === selectedCompanyId);
@@ -430,12 +446,15 @@ export default function Empresas() {
   };
 
   const upsertStampForClient = async (clientId, promotion) => {
-    if (!dbRef.current) {
-      throw new Error("La base de datos no está disponible.");
+    let db = dbRef.current;
+    if (!db) {
+      db = await SQLite.openDatabaseAsync(DB_NAME);
+      dbRef.current = db;
+      await ensureTables(db);
     }
 
     const currentRows = await executeSql(
-      dbRef.current,
+      db,
       `SELECT * FROM ${CARD_TABLE} WHERE client_id = ? AND promotion_id = ? LIMIT 1;`,
       [clientId, promotion.id]
     );
@@ -444,7 +463,7 @@ export default function Empresas() {
 
     if (!existingCard) {
       await executeSql(
-        dbRef.current,
+        db,
         `INSERT INTO ${CARD_TABLE} (
           client_id, company_id, promotion_id, promotion_name, total_slots, stamps, reward
         ) VALUES (?, ?, ?, ?, ?, ?, ?);`,
@@ -477,7 +496,7 @@ export default function Empresas() {
 
     const nextStampCount = existingCard.stamps + 1;
     await executeSql(
-      dbRef.current,
+      db,
       `UPDATE ${CARD_TABLE} SET stamps = ? WHERE id = ?;`,
       [nextStampCount, existingCard.id]
     );
@@ -1036,12 +1055,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   content: {
-    paddingBottom: Spacing.xxl * 2,
+    paddingBottom: Spacing.xxl,
   },
   heroCard: {
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    marginBottom: Spacing.xxl,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
     ...Shadows.medium,
   },
   heroTitle: {
@@ -1069,8 +1088,8 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: Colors.card,
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    marginBottom: Spacing.xxl,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
     ...Shadows.light,
   },
   sectionTitle: {
@@ -1213,9 +1232,9 @@ const styles = StyleSheet.create({
     bottom: Spacing.xl,
     right: Spacing.xl,
     backgroundColor: Colors.primary,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: scale(56),
+    height: scale(56),
+    borderRadius: scale(28),
     justifyContent: "center",
     alignItems: "center",
     ...Shadows.medium,
@@ -1234,8 +1253,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
-    width: "90%",
-    maxHeight: "80%",
+    width: Screen.widthPercent(90),
+    maxHeight: Screen.heightPercent(80),
     ...Shadows.medium,
   },
   modalScrollContent: {

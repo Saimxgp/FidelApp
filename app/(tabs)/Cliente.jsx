@@ -18,6 +18,8 @@ import {
   Colors,
   FontSizes,
   Layout,
+  scale,
+  Screen,
   Shadows,
   Spacing,
 } from "@/constants/styles";
@@ -286,11 +288,31 @@ export default function Cliente() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!dbRef.current) {
-        return;
-      }
+      const fetchData = async () => {
+        if (!dbRef.current) {
+          try {
+            const db = await SQLite.openDatabaseAsync(DB_NAME);
+            dbRef.current = db;
+            await executeSql(
+              db,
+              `CREATE TABLE IF NOT EXISTS ${CLIENT_TABLE} (
+                id TEXT PRIMARY KEY NOT NULL,
+                name TEXT,
+                email TEXT
+              );`
+            );
+            await ensureLoyaltyTable(db);
+            await ensureClientCacheTable(db);
+          } catch (error) {
+            console.warn("Failed to reopen database", error);
+            return;
+          }
+        }
 
-      refreshClientState();
+        refreshClientState();
+      };
+
+      fetchData();
     }, [refreshClientState])
   );
 
@@ -699,7 +721,7 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   compactProgressTrack: {
-    height: 8,
+    height: scale(8),
     borderRadius: BorderRadius.round,
     backgroundColor: Colors.border,
     overflow: "hidden",
@@ -746,7 +768,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   previewModalContent: {
-    width: "100%",
+    width: Screen.widthPercent(100),
     borderRadius: BorderRadius.xl,
     backgroundColor: Colors.card,
     padding: Spacing.lg,

@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 
-import { Colors, scale } from "@/constants/styles";
+import { Colors, moderateScale, scale, verticalScale } from "@/constants/styles";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import LoginScreen from "@/app/login";
 import SignUpScreen from "@/app/signup";
@@ -99,12 +99,12 @@ function MainTabs({ onLogout }) {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
-          height: scale(60),
-          paddingBottom: scale(5),
-          paddingTop: scale(5),
+          height: verticalScale(60),
+          paddingBottom: verticalScale(5),
+          paddingTop: verticalScale(5),
         },
         tabBarLabelStyle: {
-          fontSize: scale(12),
+          fontSize: moderateScale(12, 0.5),
           fontWeight: "bold",
         },
       }}
@@ -114,7 +114,7 @@ function MainTabs({ onLogout }) {
         options={{
           title: "Empresas",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="business" color={color} size={scale(28)} />
+            <Ionicons name="business" color={color} size={moderateScale(28, 0.5)} />
           ),
         }}
         component={EmpresasScreen}
@@ -124,7 +124,7 @@ function MainTabs({ onLogout }) {
         options={{
           title: "Clientes",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="people" color={color} size={scale(28)} />
+            <Ionicons name="people" color={color} size={moderateScale(28, 0.5)} />
           ),
         }}
         component={ClienteScreen}
@@ -134,7 +134,7 @@ function MainTabs({ onLogout }) {
         options={{
           title: "Perfil",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person" color={color} size={scale(28)} />
+            <Ionicons name="person" color={color} size={moderateScale(28, 0.5)} />
           ),
         }}
       >

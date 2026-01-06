@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
   },
   inputContent: {
     height: Layout.inputHeight,
+    paddingVertical: Spacing.xs,
   },
   primaryButton: {
     borderRadius: BorderRadius.round,

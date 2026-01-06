@@ -101,9 +101,6 @@ export default function LoginScreen({ onLogin, onSignUp, onForgotPassword }) {
             <Image source={require("@/assets/images/icon.png")} style={styles.heroLogo} />
           </View>
           <Text style={styles.heroTitle}>¡Bienvenido de nuevo!</Text>
-          <Text style={styles.heroSubtitle}>
-            Encuentra rápidamente las recompensas que más te gustan.
-          </Text>
         </View>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -119,7 +116,7 @@ export default function LoginScreen({ onLogin, onSignUp, onForgotPassword }) {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            left={<TextInput.Icon icon="email-outline" color={Colors.primary} />}
+            left={<TextInput.Icon icon={() => <MaterialCommunityIcons name="email-outline" size={20} color={Colors.primary} />} />}
             outlineColor={Colors.border}
             activeOutlineColor={Colors.primary}
             textColor={Colors.text}
@@ -138,7 +135,7 @@ export default function LoginScreen({ onLogin, onSignUp, onForgotPassword }) {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!passwordVisible}
-            left={<TextInput.Icon icon="lock-outline" color={Colors.primary} />}
+            left={<TextInput.Icon icon={() => <MaterialCommunityIcons name="lock-outline" size={20} color={Colors.primary} />} />}
             right={
               <TextInput.Icon
                 icon={(props) => (
@@ -213,8 +210,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   hero: {
-    paddingTop: Layout.screenPadding * 2,
-    paddingBottom: Layout.screenPadding * 3,
+    paddingTop: Layout.screenPadding * 0.5,
+    paddingBottom: Layout.screenPadding,
     paddingHorizontal: Layout.screenPadding,
     borderBottomLeftRadius: BorderRadius.xl * 2,
     borderBottomRightRadius: BorderRadius.xl * 2,
@@ -223,63 +220,66 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heroLogoWrapper: {
-    width: Layout.logoSize * 0.85,
-    height: Layout.logoSize * 0.85,
+    width: Layout.logoSize * 0.3,
+    height: Layout.logoSize * 0.3,
     borderRadius: BorderRadius.round,
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: Spacing.md,
+    marginBottom: 0,
+    marginTop: Spacing.sm,
   },
   heroLogo: {
-    width: Layout.logoSize * 0.5,
-    height: Layout.logoSize * 0.5,
+    width: Layout.logoSize * 0.2,
+    height: Layout.logoSize * 0.2,
     tintColor: Colors.textOnPrimary,
   },
   heroTitle: {
-    fontSize: FontSizes.xxl,
+    fontSize: FontSizes.md,
     color: Colors.textOnPrimary,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: Spacing.xs,
+    marginBottom: 0,
   },
   heroSubtitle: {
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.xs,
     color: Colors.textOnPrimary,
     textAlign: "center",
-    lineHeight: FontSizes.md * 1.4,
+    lineHeight: FontSizes.xs * 1.4,
   },
   content: {
     paddingHorizontal: Layout.screenPadding,
-    paddingBottom: Spacing.xl,
+    paddingBottom: Spacing.md,
+    paddingTop: Spacing.xl,
   },
   card: {
     backgroundColor: Colors.card,
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
+    padding: Spacing.md,
+    gap: Spacing.xs,
     ...Shadows.medium,
   },
   title: {
-    fontSize: FontSizes.xl,
-    marginBottom: Spacing.xs,
+    fontSize: FontSizes.lg,
+    marginBottom: 0,
     color: Colors.text,
     fontWeight: "700",
     textAlign: "left",
   },
   subtitle: {
-    fontSize: FontSizes.sm,
+    fontSize: FontSizes.xs,
     color: Colors.textMuted,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
     lineHeight: FontSizes.sm * 1.6,
   },
   input: {
-    marginBottom: Spacing.xs,
+    marginBottom: 0,
     backgroundColor: Colors.backgroundAlt,
     borderRadius: BorderRadius.lg,
   },
   inputContent: {
     height: Layout.inputHeight,
+    paddingVertical: Spacing.xs,
   },
   linkButtonContent: {
     justifyContent: "flex-end",
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     borderRadius: BorderRadius.round,
-    marginTop: Spacing.sm,
+    marginTop: 0,
   },
   primaryButtonContent: {
     height: Layout.buttonHeight,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: Spacing.lg,
+    marginVertical: Spacing.md,
     gap: Spacing.sm,
   },
   dividerLine: {
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     height: Layout.buttonHeight,
   },
   footerLink: {
-    marginTop: Spacing.lg,
+    marginTop: Spacing.md,
     alignItems: "center",
   },
   footerText: {

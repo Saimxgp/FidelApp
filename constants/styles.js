@@ -4,10 +4,16 @@
 
 import { Dimensions } from "react-native";
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-// Scale function for responsive sizing
+// Scale function for responsive sizing based on width
 export const scale = (size) => (screenWidth / 375) * size; // Base width 375 (iPhone 6/7/8)
+
+// Scale function for responsive sizing based on height
+export const verticalScale = (size) => (screenHeight / 667) * size; // Base height 667 (iPhone 6/7/8)
+
+// Moderate scale for balanced scaling
+export const moderateScale = (size, factor = 0.5) => size + (scale(size) - size) * factor;
 
 export const Colors = {
   primary: "#0FA3B1",
@@ -86,8 +92,21 @@ export const Shadows = {
 export const Layout = {
   screenPadding: scale(Spacing.md),
   containerPadding: scale(Spacing.lg),
-  buttonHeight: scale(48),
-  inputHeight: scale(40),
+  buttonHeight: verticalScale(48),
+  inputHeight: verticalScale(48),
   borderWidth: 1,
   logoSize: scale(100),
+  headerHeight: verticalScale(60),
+  tabBarHeight: verticalScale(60),
+  cardWidth: scale(300),
+  cardHeight: verticalScale(200),
+  modalWidth: scale(320),
+  modalHeight: verticalScale(400),
+};
+
+export const Screen = {
+  width: screenWidth,
+  height: screenHeight,
+  widthPercent: (percent) => (screenWidth * percent) / 100,
+  heightPercent: (percent) => (screenHeight * percent) / 100,
 };
